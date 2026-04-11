@@ -3,6 +3,22 @@ import { db } from '@/lib/db';
 
 export async function GET() {
   try {
+    // Check if db is available (Firebase might not be initialized)
+    if (!db || !db.user) {
+      return NextResponse.json({ 
+        error: 'Database not configured',
+        conversionRate: 0,
+        activeUsers: 0,
+        retentionRate: 0,
+        topAiUsers: [],
+        templatePopularity: {},
+        planDistribution: { free: 0, premium: 0 },
+        statusDistribution: { active: 0, suspended: 0 },
+        totalUsers: 0,
+        premiumUsers: 0,
+      }, { status: 503 });
+    }
+
     const totalUsers = await db.user.count({ where: { role: 'user' } });
     const premiumUsers = await db.user.count({ where: { role: 'user', plan: 'premium' } });
     const conversionRate = totalUsers > 0 ? ((premiumUsers / totalUsers) * 100).toFixed(1) : '0';

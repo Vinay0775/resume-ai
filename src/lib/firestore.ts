@@ -1,5 +1,12 @@
-import { db } from './firebase-admin';
+import { db, adminApp } from './firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+
+// Check if Firebase is initialized
+const isFirebaseInitialized = !!adminApp;
+
+if (!isFirebaseInitialized) {
+  console.warn('⚠️ Firebase Admin is not initialized. Database operations will be disabled.');
+}
 
 // Types matching the Prisma schema
 export interface User {

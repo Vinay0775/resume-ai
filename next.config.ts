@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
     '.space.z.ai',
     '.z.ai',
   ],
+  // Vercel optimization
+  output: undefined, // Let Vercel handle output mode
 };
 
 export default nextConfig;
