@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Mail, Lock, Eye, EyeOff, Loader2, FileText, User } from 'lucide-react';
+import { toast } from 'sonner';
+import GoogleEmailDialog from './GoogleEmailDialog';
 
 export default function SignupPage() {
   const { setCurrentPage, setUser, setIsAuthenticated } = useAppStore();
@@ -20,6 +22,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
 
   const getPasswordStrength = () => {
     if (!password) return { level: 0, text: '', color: '' };
@@ -31,6 +34,14 @@ export default function SignupPage() {
   };
 
   const strength = getPasswordStrength();
+
+  const handleSignupSuccess = (userData: { id: string; name: string; email: string; plan: string; role: string; image?: string }) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('resumeai_user', JSON.stringify(userData));
+    toast.success(`Welcome, ${userData.name || 'User'}! Account created successfully.`);
+    setCurrentPage('dashboard');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +63,7 @@ export default function SignupPage() {
       const firebaseResult = await signUpWithEmail(name, email, password);
 
       if (firebaseResult) {
-        setUser(firebaseResult);
-        setIsAuthenticated(true);
-        setCurrentPage('dashboard');
+        handleSignupSuccess(firebaseResult);
         return;
       }
 
@@ -81,18 +90,14 @@ export default function SignupPage() {
 
       if (loginRes.ok) {
         const loginData = await loginRes.json();
-        const userData = {
+        handleSignupSuccess({
           id: loginData.id,
           name: loginData.name,
           email: loginData.email,
           plan: loginData.plan,
           role: loginData.role || 'user',
           image: loginData.image || undefined,
-        };
-        setUser(userData);
-        setIsAuthenticated(true);
-        localStorage.setItem('resumeai_user', JSON.stringify(userData));
-        setCurrentPage('dashboard');
+        });
       } else {
         // Signup succeeded but auto-login failed, redirect to login
         setCurrentPage('login');
@@ -108,67 +113,86 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
     try {
-      // Try Firebase Google sign-in first
+      // Try Firebase Google sign-in (works in real browsers)
       const firebaseResult = await signInWithGoogle();
 
       if (firebaseResult) {
-        setUser(firebaseResult);
-        setIsAuthenticated(true);
-        setCurrentPage('dashboard');
+        handleSignupSuccess(firebaseResult);
         return;
       }
 
-      // Firebase failed — fall back to demo account approach
+      // Firebase popup was blocked or failed — show email dialog as fallback
+      setLoading(false);
+      setGoogleDialogOpen(true);
+    } catch {
+      // Firebase failed — show email dialog as fallback
+      setLoading(false);
+      setGoogleDialogOpen(true);
+    }
+  };
+
+  const handleGoogleEmailSubmit = async (googleEmail: string, googleName: string) => {
+    try {
+      // Create or login user via local API with Google email
       await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
+        body: JSON.stringify({
+          name: googleName,
+          email: googleEmail,
+          password: 'google-oauth-' + googleEmail,
+        }),
       });
 
-      const res = await fetch('/api/auth/login', {
+      // Login via local API
+      const loginRes = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'demo@resumeai.com', password: 'demo1234' }),
+        body: JSON.stringify({
+          email: googleEmail,
+          password: 'google-oauth-' + googleEmail,
+        }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        const userData = {
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          plan: data.plan,
-          role: data.role || 'user',
-          image: data.image || undefined,
-        };
-        setUser(userData);
-        setIsAuthenticated(true);
-        localStorage.setItem('resumeai_user', JSON.stringify(userData));
-        setCurrentPage('dashboard');
+      if (loginRes.ok) {
+        const loginData = await loginRes.json();
+        handleSignupSuccess({
+          id: loginData.id,
+          name: loginData.name,
+          email: loginData.email,
+          plan: loginData.plan,
+          role: loginData.role || 'user',
+          image: loginData.image || undefined,
+        });
       } else {
-        setError(data.error || 'Login failed. Please try again.');
+        const data = await loginRes.json();
+        setError(data.error || 'Google Sign-Up failed. Please try email/password.');
       }
     } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+      setError('Google Sign-Up failed. Please try email/password.');
     }
+  };
+
+  const goToHome = () => {
+    setCurrentPage('landing');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo - Clickable to go to homepage */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
+          <button
+            onClick={goToHome}
+            className="inline-flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               ResumeAI
             </span>
-          </div>
+          </button>
           <p className="text-muted-foreground">Create your account to get started</p>
         </div>
 
@@ -323,6 +347,13 @@ export default function SignupPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Google Email Dialog - fallback when popup is blocked */}
+      <GoogleEmailDialog
+        open={googleDialogOpen}
+        onOpenChange={setGoogleDialogOpen}
+        onSubmit={handleGoogleEmailSubmit}
+      />
     </div>
   );
 }

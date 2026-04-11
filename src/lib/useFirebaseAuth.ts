@@ -37,9 +37,6 @@ export function useFirebaseAuth() {
 
   /**
    * Sync a Firebase user with the local API.
-   * 1. Try to create the user via /api/user (idempotent — returns existing if already there)
-   * 2. Call /api/auth/login to validate and get full local user data
-   * 3. Store in localStorage under 'resumeai_user'
    */
   const syncWithLocalApi = useCallback(async (firebaseUser: User, fallbackName?: string): Promise<UserData | null> => {
     try {
@@ -86,7 +83,6 @@ export function useFirebaseAuth() {
       localStorage.setItem('resumeai_user', JSON.stringify(fallbackData));
       return fallbackData;
     } catch {
-      // If sync fails entirely, store Firebase data as fallback
       const fallbackData: UserData = {
         id: firebaseUser.uid,
         name: firebaseUser.displayName || fallbackName || 'User',
@@ -101,7 +97,8 @@ export function useFirebaseAuth() {
   }, []);
 
   /**
-   * Sign in with Google via Firebase popup, then sync with local DB.
+   * Sign in with Google via Firebase popup.
+   * Returns UserData on success, null on failure (caller should show fallback UI).
    */
   const signInWithGoogle = useCallback(async (): Promise<UserData | null> => {
     try {
@@ -109,8 +106,21 @@ export function useFirebaseAuth() {
       const result = await signInWithPopup(auth, provider);
       return await syncWithLocalApi(result.user);
     } catch (error: unknown) {
-      // If Firebase fails (e.g. invalid config), return null to signal fallback
-      console.warn('Firebase Google sign-in failed:', error);
+      const firebaseError = error as { code?: string; message?: string };
+
+      // Log common expected errors without alarming
+      if (
+        firebaseError.code === 'auth/popup-blocked' ||
+        firebaseError.code === 'auth/popup-closed-by-user' ||
+        firebaseError.code === 'auth/cancelled-popup-request' ||
+        firebaseError.code === 'auth/unauthorized-domain'
+      ) {
+        console.log('Google Sign-In popup blocked or cancelled - fallback needed');
+      } else {
+        console.warn('Firebase Google sign-in failed:', error);
+      }
+
+      // Return null so the caller can show a fallback (email dialog)
       return null;
     }
   }, [syncWithLocalApi]);
@@ -125,17 +135,14 @@ export function useFirebaseAuth() {
   ): Promise<UserData | null> => {
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
-      // Set display name in Firebase profile
       await updateProfile(credential.user, { displayName: name });
 
-      // Create user in local DB
       await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
 
-      // Login via local API
       const loginRes = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -156,7 +163,6 @@ export function useFirebaseAuth() {
         return userData;
       }
 
-      // Fallback to sync helper
       return await syncWithLocalApi(credential.user, name);
     } catch (error: unknown) {
       console.warn('Firebase email signup failed:', error);
@@ -174,7 +180,6 @@ export function useFirebaseAuth() {
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
 
-      // Login via local API
       const loginRes = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -195,7 +200,6 @@ export function useFirebaseAuth() {
         return userData;
       }
 
-      // Fallback to sync helper
       return await syncWithLocalApi(credential.user);
     } catch (error: unknown) {
       console.warn('Firebase email sign-in failed:', error);

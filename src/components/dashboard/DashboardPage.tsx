@@ -196,14 +196,14 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <button onClick={() => setCurrentPage('landing')} className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
             <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               ResumeAI
             </span>
-          </div>
+          </button>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" className="w-8 h-8 p-0" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

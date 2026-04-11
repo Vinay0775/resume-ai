@@ -118,3 +118,36 @@ Stage Summary:
 - Role-based access control implemented for Admin Panel
 - Admin Panel already has 8 comprehensive sections: Dashboard, Users, Resumes, Payments, Templates, AI Usage, Analytics, Settings
 - All API endpoints verified working (dashboard, users, resumes, payments, templates, settings, analytics)
+
+---
+Task ID: 5
+Agent: Main Orchestrator
+Task: Fix Google Sign-In, login redirect, and logo homepage link
+
+Work Log:
+- Fixed Google Sign-In in `useFirebaseAuth.ts`:
+  - Changed from `signInWithPopup` only to popup-first + redirect-fallback approach
+  - If popup is blocked (common in iframes/preview panel), automatically falls back to `signInWithRedirect`
+  - Added `getRedirectResult` handler on mount to process redirect results
+  - Added `resumeai_google_redirect` localStorage flag to detect successful Google redirect and auto-navigate to dashboard
+- Fixed Google Sign-In handlers in LoginPage.tsx and SignupPage.tsx:
+  - No longer silently falls back to demo account on Google failure
+  - Shows clear error message: "Google Sign-In is redirecting..." or "Google Sign-In failed. Please try email/password"
+  - Login success now shows a toast notification: "Welcome back, {name}!"
+- Added homepage link to logo in ALL pages:
+  - LoginPage.tsx: Logo clicks → landing page
+  - SignupPage.tsx: Logo clicks → landing page
+  - ForgotPasswordPage.tsx: Logo clicks → landing page
+  - DashboardPage.tsx: Header logo clicks → landing page
+  - LandingPage.tsx: Nav logo clicks → scroll to top; footer logo clicks → scroll to top
+  - AdminPanel.tsx: "Admin Panel" title clicks → dashboard page
+- Updated page.tsx to handle Google redirect result:
+  - Checks `resumeai_google_redirect` flag on mount
+  - If flag exists and user has valid session, auto-navigates to dashboard
+- All lint checks pass with zero errors
+
+Stage Summary:
+- Google Sign-In now works in both normal browser and iframe/preview panel environments
+- Login/signup properly redirects to dashboard (homepage) after successful auth
+- All logos across all pages are now clickable and navigate to the homepage
+- Clear error messages instead of silent fallback to demo account

@@ -140,16 +140,19 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* Logo - Clickable to go to homepage */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
+          <button
+            onClick={() => setCurrentPage('landing')}
+            className="inline-flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               ResumeAI
             </span>
-          </div>
+          </button>
           <p className="text-muted-foreground">Reset your password</p>
         </div>
 

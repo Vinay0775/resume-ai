@@ -57,10 +57,10 @@ export default function AdminPanel() {
       <aside className={`${sidebarOpen ? 'w-56' : 'w-16'} bg-white dark:bg-gray-900 border-r flex flex-col transition-all duration-300 shrink-0`}>
         <div className="h-14 flex items-center justify-between px-3 border-b">
           {sidebarOpen && (
-            <div className="flex items-center gap-2">
+            <button onClick={() => setCurrentPage('dashboard')} className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
               <Shield className="w-5 h-5 text-emerald-600" />
               <span className="font-bold text-sm">Admin Panel</span>
-            </div>
+            </button>
           )}
           <Button variant="ghost" size="sm" className="w-7 h-7 p-0" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}

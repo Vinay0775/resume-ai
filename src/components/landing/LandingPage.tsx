@@ -195,12 +195,12 @@ export default function LandingPage() {
       {/* ─── Navbar ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
             <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
               <FileText className="size-4 text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight">ResumeAI</span>
-          </div>
+          </button>
 
           <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">
@@ -737,12 +737,12 @@ export default function LandingPage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
             {/* Brand */}
             <div className="lg:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
                   <FileText className="size-4 text-white" />
                 </div>
                 <span className="text-lg font-bold tracking-tight">ResumeAI</span>
-              </div>
+              </button>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 AI-powered resume builder that helps you create professional resumes
                 in minutes.
