@@ -7,6 +7,7 @@ import LoginPage from '@/components/auth/LoginPage';
 import SignupPage from '@/components/auth/SignupPage';
 import DashboardPage from '@/components/dashboard/DashboardPage';
 import BuilderPage from '@/components/builder/BuilderPage';
+import AdminPanel from '@/components/admin/AdminPanel';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
@@ -50,6 +51,8 @@ function AppContent() {
       return isAuthenticated ? <DashboardPage /> : <LandingPage />;
     case 'builder':
       return isAuthenticated ? <BuilderPage /> : <LandingPage />;
+    case 'admin':
+      return isAuthenticated ? <AdminPanel /> : <LandingPage />;
     default:
       return <LandingPage />;
   }

@@ -64,7 +64,7 @@ export interface ResumeTemplate {
   category: string;
 }
 
-export type Page = 'landing' | 'login' | 'signup' | 'dashboard' | 'builder';
+export type Page = 'landing' | 'login' | 'signup' | 'dashboard' | 'builder' | 'admin';
 
 export interface UserState {
   user: {

@@ -32,7 +32,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, FileText, Trash2, Edit, Copy, MoreVertical,
-  LogOut, Crown, Layout, Loader2, Sparkles, Clock, Moon, Sun
+  LogOut, Crown, Layout, Loader2, Sparkles, Clock, Moon, Sun,
+  Database
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -211,6 +212,10 @@ export default function DashboardPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setCurrentPage('admin')}>
+                  <Database className="w-4 h-4 mr-2" />
+                  Admin Panel
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
