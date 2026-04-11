@@ -38,8 +38,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    if (password.length < 4) {
+      return NextResponse.json({ error: 'Password must be at least 4 characters' }, { status: 400 });
     }
 
     const existingUser = await db.user.findUnique({ where: { email } });

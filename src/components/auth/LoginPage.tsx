@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store';
+import { useFirebaseAuth } from '@/lib/useFirebaseAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, FileText } from 'lucide-react';
 
 export default function LoginPage() {
   const { setCurrentPage, setUser, setIsAuthenticated } = useAppStore();
+  const { signInWithEmail, signInWithGoogle } = useFirebaseAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +25,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // Try Firebase sign-in first
+      const firebaseResult = await signInWithEmail(email, password);
+
+      if (firebaseResult) {
+        // Firebase succeeded — user data is already synced and stored
+        setUser(firebaseResult);
+        setIsAuthenticated(true);
+        setCurrentPage('dashboard');
+        return;
+      }
+
+      // Firebase failed (e.g. invalid config) — fall back to direct API
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,7 +50,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Successfully logged in
       const userData = {
         id: data.id,
         name: data.name,
@@ -59,14 +72,23 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      // First try to ensure the demo user exists
+      // Try Firebase Google sign-in first
+      const firebaseResult = await signInWithGoogle();
+
+      if (firebaseResult) {
+        setUser(firebaseResult);
+        setIsAuthenticated(true);
+        setCurrentPage('dashboard');
+        return;
+      }
+
+      // Firebase failed — fall back to demo account approach
       await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
       });
 
-      // Then login with that user
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,6 +111,47 @@ export default function LoginPage() {
         setCurrentPage('dashboard');
       } else {
         setError(data.error || 'Login failed. Please try again.');
+      }
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Ensure the demo user exists
+      await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
+      });
+
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'demo@resumeai.com', password: 'demo1234' }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        const userData = {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          plan: data.plan,
+          image: data.image || undefined,
+        };
+        setUser(userData);
+        setIsAuthenticated(true);
+        localStorage.setItem('resumeai_user', JSON.stringify(userData));
+        setCurrentPage('dashboard');
+      } else {
+        setError(data.error || 'Demo login failed.');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -150,12 +213,9 @@ export default function LoginPage() {
                   <button
                     type="button"
                     className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline"
-                    onClick={() => {
-                      setEmail('demo@resumeai.com');
-                      setPassword('demo1234');
-                    }}
+                    onClick={() => setCurrentPage('forgotPassword')}
                   >
-                    Use demo account
+                    Forgot password?
                   </button>
                 </div>
                 <div className="relative">
@@ -217,7 +277,17 @@ export default function LoginPage() {
               Continue with Google
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground mt-6">
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              Want to try first?{' '}
+              <button
+                onClick={handleDemoLogin}
+                className="text-emerald-600 hover:text-emerald-700 font-semibold hover:underline"
+              >
+                Use demo account
+              </button>
+            </p>
+
+            <p className="text-center text-sm text-muted-foreground mt-4">
               Don&apos;t have an account?{' '}
               <button
                 onClick={() => setCurrentPage('signup')}

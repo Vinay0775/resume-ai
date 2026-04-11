@@ -5,6 +5,7 @@ import { useAppStore } from '@/store';
 import LandingPage from '@/components/landing/LandingPage';
 import LoginPage from '@/components/auth/LoginPage';
 import SignupPage from '@/components/auth/SignupPage';
+import ForgotPasswordPage from '@/components/auth/ForgotPasswordPage';
 import DashboardPage from '@/components/dashboard/DashboardPage';
 import BuilderPage from '@/components/builder/BuilderPage';
 import AdminPanel from '@/components/admin/AdminPanel';
@@ -53,6 +54,8 @@ function AppContent() {
       return <LoginPage />;
     case 'signup':
       return <SignupPage />;
+    case 'forgotPassword':
+      return <ForgotPasswordPage />;
     case 'dashboard':
       return isAuthenticated ? <DashboardPage /> : <LandingPage />;
     case 'builder':

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store';
+import { useFirebaseAuth } from '@/lib/useFirebaseAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, FileText, User } from 'lucide-react';
 
 export default function SignupPage() {
   const { setCurrentPage, setUser, setIsAuthenticated } = useAppStore();
+  const { signUpWithEmail, signInWithGoogle } = useFirebaseAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,15 +40,25 @@ export default function SignupPage() {
       setError('Passwords do not match');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 4) {
+      setError('Password must be at least 4 characters');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Create user account
+      // Try Firebase signup first
+      const firebaseResult = await signUpWithEmail(name, email, password);
+
+      if (firebaseResult) {
+        setUser(firebaseResult);
+        setIsAuthenticated(true);
+        setCurrentPage('dashboard');
+        return;
+      }
+
+      // Firebase failed — fall back to direct API
       const signupRes = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,14 +107,23 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
     try {
-      // Create demo user (or use existing)
+      // Try Firebase Google sign-in first
+      const firebaseResult = await signInWithGoogle();
+
+      if (firebaseResult) {
+        setUser(firebaseResult);
+        setIsAuthenticated(true);
+        setCurrentPage('dashboard');
+        return;
+      }
+
+      // Firebase failed — fall back to demo account approach
       await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
       });
 
-      // Login with that user
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

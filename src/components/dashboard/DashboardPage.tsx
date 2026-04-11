@@ -36,6 +36,7 @@ import {
   Database
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useFirebaseAuth } from '@/lib/useFirebaseAuth';
 
 const templates = [
   { id: 'modern', name: 'Modern Professional', isPremium: false, gradient: 'from-slate-600 to-slate-800' },
@@ -173,7 +174,15 @@ export default function DashboardPage() {
     }
   };
 
-  const handleLogout = () => {
+  const { logout: firebaseLogout } = useFirebaseAuth();
+
+  const handleLogout = async () => {
+    // Sign out from Firebase as well
+    try {
+      await firebaseLogout();
+    } catch {
+      // Firebase logout may fail if not initialized — that's fine
+    }
     localStorage.removeItem('resumeai_user');
     setUser(null);
     setIsAuthenticated(false);
