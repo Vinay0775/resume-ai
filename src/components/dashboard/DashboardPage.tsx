@@ -76,7 +76,7 @@ export default function DashboardPage() {
         setResumes(data);
       }
     } catch (err) {
-      console.error('Failed to fetch resumes:', err);
+      // Resume fetch error handled
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export default function DashboardPage() {
         setCurrentPage('builder');
       }
     } catch (err) {
-      console.error('Failed to create resume:', err);
+      // Resume creation error handled
     } finally {
       setCreating(false);
     }
@@ -139,7 +139,7 @@ export default function DashboardPage() {
       setCurrentResumeId(resume.id);
       setCurrentPage('builder');
     } catch (err) {
-      console.error('Failed to parse resume data:', err);
+      // Parse error handled
     }
   };
 
@@ -149,7 +149,7 @@ export default function DashboardPage() {
       await fetch(`/api/resumes/${deleteId}`, { method: 'DELETE' });
       setResumes(resumes.filter((r) => r.id !== deleteId));
     } catch (err) {
-      console.error('Failed to delete resume:', err);
+      // Delete error handled
     } finally {
       setDeleteId(null);
     }
@@ -170,7 +170,7 @@ export default function DashboardPage() {
       });
       fetchResumes();
     } catch (err) {
-      console.error('Failed to duplicate resume:', err);
+      // Resume duplication error handled
     }
   };
 

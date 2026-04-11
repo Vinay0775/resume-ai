@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { resumeData, title } = await request.json();
+    const { resumeData, title, userId } = await request.json();
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     if (!resumeData) {
       return NextResponse.json({ error: 'Resume data is required' }, { status: 400 });

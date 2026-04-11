@@ -18,7 +18,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json(resumes);
   } catch (error) {
-    console.error('Get resumes error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -43,7 +42,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(resume, { status: 201 });
   } catch (error) {
-    console.error('Create resume error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -396,6 +396,7 @@ function UsersPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><Badge variant={(selectedUser.plan as string) === 'premium' ? 'default' : 'secondary'}>{selectedUser.plan as string}</Badge></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Status</span><Badge variant={(selectedUser.status as string) === 'active' ? 'secondary' : 'destructive'}>{selectedUser.status as string}</Badge></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Password</span><span className="font-mono text-xs">{selectedUser.password as string || 'N/A'}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">AI Credits</span><span>{selectedUser.aiCreditsUsed as number} / {selectedUser.aiCreditsLimit as number}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Resumes</span><span>{(selectedUser._count as Record<string, number>)?.resumes || 0}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Payments</span><span>{(selectedUser._count as Record<string, number>)?.payments || 0}</span></div>

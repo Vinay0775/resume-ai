@@ -16,9 +16,6 @@ async function seed() {
         aiCreditsLimit: 999,
       },
     });
-    console.log('✅ Admin user created: admin@resumeai.com / admin1234');
-  } else {
-    console.log('Admin user already exists');
   }
 
   // Create sample payments
@@ -58,7 +55,6 @@ async function seed() {
         });
       }
     }
-    console.log('✅ Sample payments created');
   }
 
   // Create site settings
@@ -83,10 +79,7 @@ async function seed() {
     for (const s of settings) {
       await db.siteSetting.create({ data: s });
     }
-    console.log('✅ Site settings created');
   }
-
-  console.log('\n🎉 Seed complete!');
 }
 
 seed()

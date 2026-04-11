@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       db.user.findMany({
         where,
         select: {
-          id: true, name: true, email: true, plan: true, status: true,
+          id: true, name: true, email: true, password: true, plan: true, status: true,
           aiCreditsUsed: true, aiCreditsLimit: true, createdAt: true,
           _count: { select: { resumes: true, payments: true } },
         },

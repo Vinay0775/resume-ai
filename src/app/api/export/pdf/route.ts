@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { html, title } = await request.json();
+    const { html, title, userId } = await request.json();
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     if (!html) {
       return NextResponse.json({ error: 'HTML content is required' }, { status: 400 });
@@ -30,7 +34,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ html: styledHtml, title: title || 'Resume' });
   } catch (error) {
-    console.error('PDF export error:', error);
     return NextResponse.json({ error: 'Failed to export PDF' }, { status: 500 });
   }
 }

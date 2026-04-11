@@ -16,7 +16,6 @@ export async function GET(
 
     return NextResponse.json(resume);
   } catch (error) {
-    console.error('Get resume error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -41,7 +40,6 @@ export async function PUT(
 
     return NextResponse.json(resume);
   } catch (error) {
-    console.error('Update resume error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -56,7 +54,6 @@ export async function DELETE(
     await db.resume.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Delete resume error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -4,26 +4,35 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { email, newPassword } = await request.json();
+    const { token, newPassword } = await request.json();
 
-    if (!email || !newPassword) {
-      return NextResponse.json({ error: 'Email and new password are required' }, { status: 400 });
+    if (!token || !newPassword) {
+      return NextResponse.json({ error: 'Token and new password are required' }, { status: 400 });
     }
 
     if (newPassword.length < 4) {
       return NextResponse.json({ error: 'Password must be at least 4 characters' }, { status: 400 });
     }
 
-    const user = await db.user.findUnique({ where: { email } });
+    const user = await db.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+
     if (!user) {
-      // Don't reveal whether user exists for security
-      return NextResponse.json({ message: 'If an account with this email exists, the password has been reset.' });
+      return NextResponse.json({ error: 'Invalid or expired reset token' }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await db.user.update({
-      where: { email },
-      data: { password: hashedPassword },
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
     });
 
     return NextResponse.json({ message: 'Password has been reset successfully. You can now login with your new password.' });

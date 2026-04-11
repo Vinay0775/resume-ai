@@ -1,13 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+// Database abstraction layer - Now using Firebase Firestore
+// This file replaces the old Prisma client with Firebase Admin SDK
+import { db_api } from './firestore';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
+export { db_api as db };
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ['error', 'warn'],
-  })
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+// For backwards compatibility, also export individual collections
+export const { user, resume, template, payment, siteSetting } = db_api;

@@ -25,7 +25,6 @@ export async function GET(request: Request) {
       image: user.image,
     });
   } catch (error) {
-    console.error('Get user error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -80,7 +79,6 @@ export async function POST(request: Request) {
       image: user.image,
     }, { status: 201 });
   } catch (error) {
-    console.error('Signup error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

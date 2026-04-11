@@ -60,6 +60,7 @@ export default function BuilderPage() {
   const {
     user, resumeData, setResumeData, currentResumeId,
     setCurrentResumeId, setCurrentPage, selectedTemplate, setSelectedTemplate,
+    isAuthenticated,
   } = useAppStore();
 
   const [activeTab, setActiveTab] = useState('personalInfo');
@@ -195,6 +196,11 @@ export default function BuilderPage() {
 
   // Export PDF
   const handleExportPDF = async () => {
+    if (!isAuthenticated) {
+      setCurrentPage('login');
+      toast.error('Please sign in to download your resume');
+      return;
+    }
     if (!previewRef.current) return;
     try {
       const html2pdf = (await import('html2pdf.js')).default;
@@ -216,6 +222,11 @@ export default function BuilderPage() {
 
   // Export DOCX
   const handleExportDocx = async () => {
+    if (!isAuthenticated) {
+      setCurrentPage('login');
+      toast.error('Please sign in to download your resume');
+      return;
+    }
     try {
       const res = await fetch('/api/export/docx', {
         method: 'POST',
@@ -223,6 +234,7 @@ export default function BuilderPage() {
         body: JSON.stringify({
           resumeData,
           title: resumeData.personalInfo.fullName || 'resume',
+          userId: user?.id,
         }),
       });
       if (res.ok) {

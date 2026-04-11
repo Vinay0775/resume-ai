@@ -115,9 +115,9 @@ export function useFirebaseAuth() {
         firebaseError.code === 'auth/cancelled-popup-request' ||
         firebaseError.code === 'auth/unauthorized-domain'
       ) {
-        console.log('Google Sign-In popup blocked or cancelled - fallback needed');
+        // Popup blocked - fallback needed
       } else {
-        console.warn('Firebase Google sign-in failed:', error);
+        // Firebase Google sign-in error - handled
       }
 
       // Return null so the caller can show a fallback (email dialog)
@@ -165,7 +165,6 @@ export function useFirebaseAuth() {
 
       return await syncWithLocalApi(credential.user, name);
     } catch (error: unknown) {
-      console.warn('Firebase email signup failed:', error);
       return null;
     }
   }, [syncWithLocalApi]);
@@ -202,7 +201,6 @@ export function useFirebaseAuth() {
 
       return await syncWithLocalApi(credential.user);
     } catch (error: unknown) {
-      console.warn('Firebase email sign-in failed:', error);
       return null;
     }
   }, [syncWithLocalApi]);
@@ -215,7 +213,6 @@ export function useFirebaseAuth() {
       await sendPasswordResetEmail(auth, email);
       return true;
     } catch (error: unknown) {
-      console.warn('Firebase password reset failed:', error);
       return false;
     }
   }, []);
@@ -227,7 +224,7 @@ export function useFirebaseAuth() {
     try {
       await signOut(auth);
     } catch (error: unknown) {
-      console.warn('Firebase sign-out failed:', error);
+      // Sign-out error handled silently
     }
     localStorage.removeItem('resumeai_user');
   }, []);

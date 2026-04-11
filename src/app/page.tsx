@@ -6,6 +6,7 @@ import LandingPage from '@/components/landing/LandingPage';
 import LoginPage from '@/components/auth/LoginPage';
 import SignupPage from '@/components/auth/SignupPage';
 import ForgotPasswordPage from '@/components/auth/ForgotPasswordPage';
+import ResetPasswordPage from '@/components/auth/ResetPasswordPage';
 import DashboardPage from '@/components/dashboard/DashboardPage';
 import BuilderPage from '@/components/builder/BuilderPage';
 import AdminPanel from '@/components/admin/AdminPanel';
@@ -57,6 +58,8 @@ function AppContent() {
       return <SignupPage />;
     case 'forgotPassword':
       return <ForgotPasswordPage />;
+    case 'resetPassword':
+      return <ResetPasswordPage />;
     case 'dashboard':
       return isAuthenticated ? <DashboardPage /> : <LandingPage />;
     case 'builder':

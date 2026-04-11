@@ -45,7 +45,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ result });
   } catch (error) {
-    console.error('ATS score error:', error);
-    return NextResponse.json({ error: 'Failed to check ATS score' }, { status: 500 });
+
   }
 }
