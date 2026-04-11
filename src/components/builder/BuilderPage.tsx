@@ -33,9 +33,11 @@ import {
 import {
   ArrowLeft, Save, Download, FileText, Plus, Trash2,
   Sparkles, ChevronDown, ChevronUp, Eye, Layout,
-  Loader2, Wand2, Target, Shield, FileDown, GripVertical
+  Loader2, Wand2, Target, Shield, FileDown, GripVertical,
+  Moon, Sun
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTheme } from 'next-themes';
 
 const templateList = [
   { id: 'modern', name: 'Modern' },
@@ -70,6 +72,7 @@ export default function BuilderPage() {
   const [jobDescription, setJobDescription] = useState('');
   const [tailorLoading, setTailorLoading] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
+  const { theme, setTheme } = useTheme();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     personalInfo: true, workExperience: true, education: true, skills: true, projects: true,
   });
@@ -369,6 +372,9 @@ export default function BuilderPage() {
           <Separator orientation="vertical" className="h-6" />
 
           {/* AI Tools */}
+          <Button variant="outline" size="sm" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="w-8 h-8 p-0">
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setTailorOpen(true)} className="hidden sm:flex">
             <Target className="w-3.5 h-3.5 mr-1" /> Tailor
           </Button>

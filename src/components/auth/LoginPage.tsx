@@ -154,11 +154,22 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => {
-                // Demo login for testing
-                setUser({ id: 'demo-user', name: 'Demo User', email: 'demo@resumeai.com', plan: 'free' });
-                setIsAuthenticated(true);
-                setCurrentPage('dashboard');
+              onClick={async () => {
+                // Demo login - ensure user exists in DB
+                try {
+                  await fetch('/api/user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
+                  });
+                } catch { /* user may already exist */ }
+                const res = await fetch('/api/user?email=demo@resumeai.com');
+                if (res.ok) {
+                  const userData = await res.json();
+                  setUser({ id: userData.id, name: userData.name, email: userData.email, plan: userData.plan });
+                  setIsAuthenticated(true);
+                  setCurrentPage('dashboard');
+                }
               }}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">

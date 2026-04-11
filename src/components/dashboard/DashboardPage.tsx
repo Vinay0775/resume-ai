@@ -32,8 +32,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Plus, FileText, Trash2, Edit, Copy, MoreVertical,
-  LogOut, Crown, Layout, Loader2, Sparkles, Clock
+  LogOut, Crown, Layout, Loader2, Sparkles, Clock, Moon, Sun
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 const templates = [
   { id: 'modern', name: 'Modern Professional', isPremium: false, gradient: 'from-slate-600 to-slate-800' },
@@ -55,6 +56,7 @@ interface Resume {
 
 export default function DashboardPage() {
   const { user, setCurrentPage, setCurrentResumeId, setResumeData, setUser, setIsAuthenticated } = useAppStore();
+  const { theme, setTheme } = useTheme();
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
@@ -192,6 +194,9 @@ export default function DashboardPage() {
             </span>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" className="w-8 h-8 p-0" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
             <Badge variant={user?.plan === 'premium' ? 'default' : 'secondary'} className="gap-1">
               {user?.plan === 'premium' ? <Crown className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
               {user?.plan === 'premium' ? 'Premium' : 'Free Plan'}

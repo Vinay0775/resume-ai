@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAppStore } from '@/store';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -214,6 +215,7 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
