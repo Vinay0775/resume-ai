@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useAppStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,32 +23,72 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (result?.error) {
-        setError('Invalid email or password');
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Invalid email or password');
+        return;
+      }
+
+      // Successfully logged in
+      const userData = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        plan: data.plan,
+        image: data.image || undefined,
+      };
+      setUser(userData);
+      setIsAuthenticated(true);
+      localStorage.setItem('resumeai_user', JSON.stringify(userData));
+      setCurrentPage('dashboard');
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // First try to ensure the demo user exists
+      await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
+      });
+
+      // Then login with that user
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'demo@resumeai.com', password: 'demo1234' }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        const userData = {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          plan: data.plan,
+          image: data.image || undefined,
+        };
+        setUser(userData);
+        setIsAuthenticated(true);
+        localStorage.setItem('resumeai_user', JSON.stringify(userData));
+        setCurrentPage('dashboard');
       } else {
-        // Fetch user data after successful login
-        const res = await fetch(`/api/user?email=${encodeURIComponent(email)}`);
-        if (res.ok) {
-          const userData = await res.json();
-          setUser({
-            id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            plan: userData.plan,
-          });
-          setIsAuthenticated(true);
-          setCurrentPage('dashboard');
-        } else {
-          setUser({ id: 'demo', name: 'User', email, plan: 'free' });
-          setIsAuthenticated(true);
-          setCurrentPage('dashboard');
-        }
+        setError(data.error || 'Login failed. Please try again.');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -106,7 +145,19 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <button
+                    type="button"
+                    className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline"
+                    onClick={() => {
+                      setEmail('demo@resumeai.com');
+                      setPassword('demo1234');
+                    }}
+                  >
+                    Use demo account
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -154,23 +205,8 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={async () => {
-                // Demo login - ensure user exists in DB
-                try {
-                  await fetch('/api/user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
-                  });
-                } catch { /* user may already exist */ }
-                const res = await fetch('/api/user?email=demo@resumeai.com');
-                if (res.ok) {
-                  const userData = await res.json();
-                  setUser({ id: userData.id, name: userData.name, email: userData.email, plan: userData.plan });
-                  setIsAuthenticated(true);
-                  setCurrentPage('dashboard');
-                }
-              }}
+              onClick={handleGoogleLogin}
+              disabled={loading}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />

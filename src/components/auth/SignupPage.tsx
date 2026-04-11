@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useAppStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,38 +46,85 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/user', {
+      // Create user account
+      const signupRes = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
+      const signupData = await signupRes.json();
 
-      if (!res.ok) {
-        setError(data.error || 'Signup failed');
+      if (!signupRes.ok) {
+        setError(signupData.error || 'Signup failed');
         return;
       }
 
       // Auto-login after signup
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
+      const loginRes = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (result?.ok) {
-        setUser({
+      if (loginRes.ok) {
+        const loginData = await loginRes.json();
+        const userData = {
+          id: loginData.id,
+          name: loginData.name,
+          email: loginData.email,
+          plan: loginData.plan,
+          image: loginData.image || undefined,
+        };
+        setUser(userData);
+        setIsAuthenticated(true);
+        localStorage.setItem('resumeai_user', JSON.stringify(userData));
+        setCurrentPage('dashboard');
+      } else {
+        // Signup succeeded but auto-login failed, redirect to login
+        setCurrentPage('login');
+      }
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Create demo user (or use existing)
+      await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
+      });
+
+      // Login with that user
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'demo@resumeai.com', password: 'demo1234' }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        const userData = {
           id: data.id,
           name: data.name,
           email: data.email,
           plan: data.plan,
-        });
+          image: data.image || undefined,
+        };
+        setUser(userData);
         setIsAuthenticated(true);
+        localStorage.setItem('resumeai_user', JSON.stringify(userData));
         setCurrentPage('dashboard');
       } else {
-        // If auto-login fails, still redirect to login
-        setCurrentPage('login');
+        setError(data.error || 'Login failed. Please try again.');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -230,22 +276,8 @@ export default function SignupPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={async () => {
-                try {
-                  await fetch('/api/user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
-                  });
-                } catch { /* user may already exist */ }
-                const res = await fetch('/api/user?email=demo@resumeai.com');
-                if (res.ok) {
-                  const userData = await res.json();
-                  setUser({ id: userData.id, name: userData.name, email: userData.email, plan: userData.plan });
-                  setIsAuthenticated(true);
-                  setCurrentPage('dashboard');
-                }
-              }}
+              onClick={handleGoogleSignup}
+              disabled={loading}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />

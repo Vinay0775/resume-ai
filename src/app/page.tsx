@@ -14,26 +14,32 @@ import { Toaster } from 'sonner';
 function AppContent() {
   const { currentPage, isAuthenticated, setUser, setIsAuthenticated } = useAppStore();
 
-  // Check for existing session on mount
+  // Check for existing session on mount using localStorage
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const res = await fetch('/api/auth/session');
-        if (res.ok) {
-          const session = await res.json();
-          if (session?.user) {
+        const savedUser = localStorage.getItem('resumeai_user');
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          // Verify user still exists in database
+          const res = await fetch(`/api/user?email=${encodeURIComponent(userData.email)}`);
+          if (res.ok) {
+            const freshData = await res.json();
             setUser({
-              id: (session.user as Record<string, unknown>).id as string || 'session-user',
-              name: session.user.name || '',
-              email: session.user.email || '',
-              plan: (session.user as Record<string, unknown>).plan as string || 'free',
-              image: session.user.image || undefined,
+              id: freshData.id,
+              name: freshData.name,
+              email: freshData.email,
+              plan: freshData.plan,
+              image: freshData.image || undefined,
             });
             setIsAuthenticated(true);
+          } else {
+            // User no longer exists, clear session
+            localStorage.removeItem('resumeai_user');
           }
         }
       } catch {
-        // No session
+        // No valid session
       }
     };
     checkSession();

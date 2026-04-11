@@ -21,6 +21,8 @@ export async function GET(request: Request) {
       name: user.name,
       email: user.email,
       plan: user.plan,
+      role: user.role,
+      image: user.image,
     });
   } catch (error) {
     console.error('Get user error:', error);
@@ -36,9 +38,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
+    if (password.length < 6) {
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    }
+
     const existingUser = await db.user.findUnique({ where: { email } });
     if (existingUser) {
-      return NextResponse.json({ error: 'User already exists' }, { status: 409 });
+      // Return existing user data instead of error for smoother Google demo login
+      return NextResponse.json({
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+        plan: existingUser.plan,
+        role: existingUser.role,
+        image: existingUser.image,
+        message: 'User already exists',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -49,6 +64,8 @@ export async function POST(request: Request) {
         email,
         password: hashedPassword,
         plan: 'free',
+        role: 'user',
+        status: 'active',
         aiCreditsUsed: 0,
         aiCreditsLimit: 5,
       },
@@ -59,6 +76,8 @@ export async function POST(request: Request) {
       name: user.name,
       email: user.email,
       plan: user.plan,
+      role: user.role,
+      image: user.image,
     }, { status: 201 });
   } catch (error) {
     console.error('Signup error:', error);

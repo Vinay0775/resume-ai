@@ -174,6 +174,7 @@ export default function DashboardPage() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('resumeai_user');
     setUser(null);
     setIsAuthenticated(false);
     setCurrentPage('landing');
