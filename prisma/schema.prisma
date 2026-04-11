@@ -13,10 +13,13 @@ model User {
   email          String     @unique
   password       String?
   image          String?
+  role           String     @default("user") // user | admin | subadmin
   plan           String     @default("free") // free | premium
+  status         String     @default("active") // active | suspended | deleted
   aiCreditsUsed  Int        @default(0)
   aiCreditsLimit Int        @default(5)
   resumes        Resume[]
+  payments       Payment[]
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 }
@@ -28,16 +31,37 @@ model Resume {
   title      String   @default("Untitled Resume")
   templateId String   @default("modern")
   resumeData String   // JSON string containing all resume sections
+  flagged    Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
 model Template {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  layout      String // JSON string defining layout structure
+  layout      String  // JSON string defining layout structure
   previewUrl  String?
   isPremium   Boolean @default(false)
   category    String  @default("professional")
+  enabled     Boolean @default(true)
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount         Float    @default(0)
+  currency       String   @default("USD")
+  status         String   @default("completed") // completed | pending | failed | refunded
+  plan           String   @default("premium")
+  paymentMethod  String   @default("card")
+  transactionId  String?
+  createdAt      DateTime @default(now())
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
 }
