@@ -13,7 +13,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
 function AppContent() {
-  const { currentPage, isAuthenticated, setUser, setIsAuthenticated } = useAppStore();
+  const { currentPage, isAuthenticated, user, setUser, setIsAuthenticated } = useAppStore();
 
   // Check for existing session on mount using localStorage
   useEffect(() => {
@@ -31,6 +31,7 @@ function AppContent() {
               name: freshData.name,
               email: freshData.email,
               plan: freshData.plan,
+              role: freshData.role || 'user',
               image: freshData.image || undefined,
             });
             setIsAuthenticated(true);
@@ -61,7 +62,7 @@ function AppContent() {
     case 'builder':
       return isAuthenticated ? <BuilderPage /> : <LandingPage />;
     case 'admin':
-      return isAuthenticated ? <AdminPanel /> : <LandingPage />;
+      return (isAuthenticated && user?.role === 'admin') ? <AdminPanel /> : <LandingPage />;
     default:
       return <LandingPage />;
   }

@@ -19,6 +19,7 @@ interface UserData {
   name: string;
   email: string;
   plan: string;
+  role: string;
   image?: string;
 }
 
@@ -66,6 +67,7 @@ export function useFirebaseAuth() {
           name: loginData.name,
           email: loginData.email,
           plan: loginData.plan,
+          role: loginData.role || 'user',
           image: loginData.image || firebaseUser.photoURL || undefined,
         };
         localStorage.setItem('resumeai_user', JSON.stringify(userData));
@@ -78,6 +80,7 @@ export function useFirebaseAuth() {
         name,
         email,
         plan: 'free',
+        role: 'user',
         image: firebaseUser.photoURL || undefined,
       };
       localStorage.setItem('resumeai_user', JSON.stringify(fallbackData));
@@ -89,6 +92,7 @@ export function useFirebaseAuth() {
         name: firebaseUser.displayName || fallbackName || 'User',
         email: firebaseUser.email || '',
         plan: 'free',
+        role: 'user',
         image: firebaseUser.photoURL || undefined,
       };
       localStorage.setItem('resumeai_user', JSON.stringify(fallbackData));
@@ -145,6 +149,7 @@ export function useFirebaseAuth() {
           name: loginData.name,
           email: loginData.email,
           plan: loginData.plan,
+          role: loginData.role || 'user',
           image: loginData.image || undefined,
         };
         localStorage.setItem('resumeai_user', JSON.stringify(userData));
@@ -183,6 +188,7 @@ export function useFirebaseAuth() {
           name: loginData.name,
           email: loginData.email,
           plan: loginData.plan,
+          role: loginData.role || 'user',
           image: loginData.image || credential.user.photoURL || undefined,
         };
         localStorage.setItem('resumeai_user', JSON.stringify(userData));

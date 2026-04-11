@@ -7,7 +7,7 @@ interface AppState {
   setCurrentPage: (page: Page) => void;
 
   // Auth
-  user: { id: string; name: string; email: string; plan: string; image?: string } | null;
+  user: { id: string; name: string; email: string; plan: string; role: string; image?: string } | null;
   setUser: (user: AppState['user']) => void;
   isAuthenticated: boolean;
   setIsAuthenticated: (val: boolean) => void;

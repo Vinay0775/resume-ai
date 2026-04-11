@@ -86,6 +86,7 @@ export default function SignupPage() {
           name: loginData.name,
           email: loginData.email,
           plan: loginData.plan,
+          role: loginData.role || 'user',
           image: loginData.image || undefined,
         };
         setUser(userData);
@@ -138,6 +139,7 @@ export default function SignupPage() {
           name: data.name,
           email: data.email,
           plan: data.plan,
+          role: data.role || 'user',
           image: data.image || undefined,
         };
         setUser(userData);

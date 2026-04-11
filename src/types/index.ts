@@ -72,6 +72,7 @@ export interface UserState {
     name: string;
     email: string;
     plan: string;
+    role: string;
     image?: string;
   } | null;
   isAuthenticated: boolean;

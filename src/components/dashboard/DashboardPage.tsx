@@ -222,7 +222,7 @@ export default function DashboardPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setCurrentPage('admin')}>
+                <DropdownMenuItem onClick={() => setCurrentPage('admin')} className={user?.role === 'admin' ? '' : 'hidden'}>
                   <Database className="w-4 h-4 mr-2" />
                   Admin Panel
                 </DropdownMenuItem>

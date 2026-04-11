@@ -55,6 +55,7 @@ export default function LoginPage() {
         name: data.name,
         email: data.email,
         plan: data.plan,
+        role: data.role || 'user',
         image: data.image || undefined,
       };
       setUser(userData);
@@ -103,6 +104,7 @@ export default function LoginPage() {
           name: data.name,
           email: data.email,
           plan: data.plan,
+          role: data.role || 'user',
           image: data.image || undefined,
         };
         setUser(userData);
@@ -144,6 +146,7 @@ export default function LoginPage() {
           name: data.name,
           email: data.email,
           plan: data.plan,
+          role: data.role || 'user',
           image: data.image || undefined,
         };
         setUser(userData);
