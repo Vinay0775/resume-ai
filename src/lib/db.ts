@@ -1,20 +1,25 @@
 // Database abstraction layer - Now using Firebase Firestore
 // This file replaces the old Prisma client with Firebase Admin SDK
 import { db_api } from './firestore';
-import { adminApp } from './firebase-admin';
+import { adminApp, db } from './firebase-admin';
 
 // Check if Firebase is initialized
 if (!adminApp) {
   console.warn('⚠️ Firebase Admin is not initialized. Database will return empty data.');
 }
 
-// Safe wrapper that handles missing Firebase gracefully
-const safeCall = <T>(fn: (...args: any[]) => Promise<T>, fallback: T = null as any): Promise<T> => {
-  if (!adminApp) {
-    console.warn('Database call skipped - Firebase not initialized');
-    return Promise.resolve(fallback);
+// Safe wrapper that handles missing Firebase gracefully with try/catch
+const safeCall = async <T>(fn: (...args: any[]) => Promise<T>, fallback: T = null as any): Promise<T> => {
+  if (!adminApp || !db) {
+    console.warn('Database call skipped - Firebase or Firestore not initialized');
+    return fallback;
   }
-  return fn();
+  try {
+    return await fn();
+  } catch (error) {
+    console.error('Database call failed:', error);
+    return fallback;
+  }
 };
 
 // Export wrapped db functions that gracefully handle missing Firebase

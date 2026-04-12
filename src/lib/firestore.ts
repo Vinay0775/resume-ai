@@ -68,12 +68,16 @@ export interface SiteSetting {
 
 // Helper functions for User collection
 export const userDb = {
-  async findUnique(data: { email?: string }): Promise<User | null> {
+  async findUnique(data: { where?: { email?: string } } | { email?: string }): Promise<User | null> {
+    if (!db) return null;
     const usersRef = db.collection('users');
     let q: FirebaseFirestore.Query<FirebaseFirestore.DocumentData, FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>>;
+
+    // Support both Prisma-style { where: { email } } and direct { email }
+    const email = data.where?.email || (data as any).email;
     
-    if (data.email) {
-      q = usersRef.where('email', '==', data.email).limit(1);
+    if (email) {
+      q = usersRef.where('email', '==', email).limit(1);
     } else {
       return null;
     }
@@ -94,6 +98,7 @@ export const userDb = {
   },
 
   async findUniqueById(id: string): Promise<User | null> {
+    if (!db) return null;
     const docRef = db.doc(`users/${id}`);
     const docSnap = await docRef.get();
     
@@ -110,6 +115,7 @@ export const userDb = {
   },
 
   async create(data: Partial<User>): Promise<User> {
+    if (!db) throw new Error('Database not available');
     const now = Timestamp.now();
     const usersRef = db.collection('users');
     const userDoc = {
@@ -148,11 +154,12 @@ export const userDb = {
     await docRef.delete();
   },
 
-  async findMany(options?: { 
+  async findMany(options?: {
     where?: Array<{ field: string; op: FirebaseFirestore.WhereFilterOp; value: any }>;
     orderBy?: { field: string; direction?: 'asc' | 'desc' };
     limit?: number;
   }): Promise<User[]> {
+    if (!db) return [];
     let q: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection('users');
     
     if (options?.where) {
@@ -182,6 +189,7 @@ export const userDb = {
   },
 
   async count(): Promise<number> {
+    if (!db) return 0;
     const snapshot = await db.collection('users').get();
     return snapshot.size;
   },
@@ -190,6 +198,7 @@ export const userDb = {
 // Helper functions for Resume collection
 export const resumeDb = {
   async findMany(userId: string): Promise<Resume[]> {
+    if (!db) return [];
     const q = db.collection('resumes').where('userId', '==', userId);
     const snapshot = await q.get();
     
@@ -205,6 +214,7 @@ export const resumeDb = {
   },
 
   async findUnique(id: string): Promise<Resume | null> {
+    if (!db) return null;
     const docRef = db.doc(`resumes/${id}`);
     const docSnap = await docRef.get();
     
@@ -220,6 +230,7 @@ export const resumeDb = {
   },
 
   async create(data: Partial<Resume>): Promise<Resume> {
+    if (!db) throw new Error('Database not available');
     const now = Timestamp.now();
     const resumesRef = db.collection('resumes');
     const resumeDoc = {
@@ -257,6 +268,7 @@ export const resumeDb = {
   },
 
   async count(): Promise<number> {
+    if (!db) return 0;
     const snapshot = await db.collection('resumes').get();
     return snapshot.size;
   },
@@ -265,6 +277,7 @@ export const resumeDb = {
 // Helper functions for Template collection
 export const templateDb = {
   async findMany(filter?: { isPremium?: boolean; enabled?: boolean; category?: string }): Promise<Template[]> {
+    if (!db) return [];
     let q: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection('templates');
     
     if (filter?.enabled !== undefined) {
@@ -279,6 +292,7 @@ export const templateDb = {
   },
 
   async create(data: Partial<Template>): Promise<Template> {
+    if (!db) throw new Error('Database not available');
     const now = Timestamp.now();
     const templatesRef = db.collection('templates');
     const templateDoc = {
@@ -308,6 +322,7 @@ export const templateDb = {
   },
 
   async count(): Promise<number> {
+    if (!db) return 0;
     const snapshot = await db.collection('templates').get();
     return snapshot.size;
   },
@@ -315,10 +330,11 @@ export const templateDb = {
 
 // Helper functions for Payment collection
 export const paymentDb = {
-  async findMany(options?: { 
+  async findMany(options?: {
     userId?: string;
     limit?: number;
   }): Promise<Payment[]> {
+    if (!db) return [];
     let q: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection('payments');
     
     if (options?.userId) {
@@ -341,6 +357,7 @@ export const paymentDb = {
   },
 
   async create(data: Partial<Payment>): Promise<Payment> {
+    if (!db) throw new Error('Database not available');
     const now = Timestamp.now();
     const paymentsRef = db.collection('payments');
     const paymentDoc = {
@@ -369,6 +386,7 @@ export const paymentDb = {
   },
 
   async count(): Promise<number> {
+    if (!db) return 0;
     const snapshot = await db.collection('payments').get();
     return snapshot.size;
   },
@@ -377,6 +395,7 @@ export const paymentDb = {
 // Helper functions for SiteSetting collection
 export const siteSettingDb = {
   async findMany(): Promise<SiteSetting[]> {
+    if (!db) return [];
     const snapshot = await db.collection('siteSettings').get();
     return snapshot.docs.map(doc => ({
       id: doc.id,
@@ -385,6 +404,7 @@ export const siteSettingDb = {
   },
 
   async findUnique(key: string): Promise<SiteSetting | null> {
+    if (!db) return null;
     const q = db.collection('siteSettings').where('key', '==', key).limit(1);
     const snapshot = await q.get();
     
@@ -397,6 +417,7 @@ export const siteSettingDb = {
   },
 
   async upsert(key: string, value: string): Promise<void> {
+    if (!db) return;
     const existing = await this.findUnique(key);
     
     if (existing) {
