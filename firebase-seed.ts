@@ -2,6 +2,7 @@
 // Run with: npm.cmd run db:seed:firebase
 import { db_api } from './src/lib/firestore';
 import * as admin from 'firebase-admin';
+import bcrypt from 'bcryptjs';
 
 async function seed() {
   console.log('🌱 Starting Firebase Firestore seed...');
@@ -9,20 +10,21 @@ async function seed() {
   try {
     // 1. Create Admin User
     console.log('\n👤 Creating admin user...');
-    const existingAdmin = await db_api.user.findUnique({ email: 'admin@resumeai.com' });
-    
+    const existingAdmin = await db_api.user.findUnique({ email: 'vinayvishwakarma080@gmail.com' });
+
     if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash('Vinita080@', 10);
       await db_api.user.create({
         name: 'Admin',
-        email: 'admin@resumeai.com',
-        password: '$2a$10$EpRnTzVl9M0qkXZM0ZvGRe8XVJlT7sY3qYq8qYq8qYq8qYq8qYq8q', // admin1234 (hashed with bcrypt)
+        email: 'vinayvishwakarma080@gmail.com',
+        password: hashedPassword,
         role: 'admin',
         plan: 'premium',
         status: 'active',
         aiCreditsUsed: 0,
         aiCreditsLimit: 999,
       });
-      console.log('✅ Admin user created: admin@resumeai.com / admin1234');
+      console.log('✅ Admin user created: vinayvishwakarma080@gmail.com');
     } else {
       console.log('⚠️  Admin user already exists');
     }
