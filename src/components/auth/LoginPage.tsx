@@ -92,17 +92,21 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      // Ensure the demo user exists
+      // Use the new Admin credentials for the demo button
+      const adminEmail = 'vinayvishwakarma080@gmail.com';
+      const adminPassword = 'Vinita080@';
+
+      // Ensure the admin user exists
       await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Demo User', email: 'demo@resumeai.com', password: 'demo1234' }),
+        body: JSON.stringify({ name: 'Admin', email: adminEmail, password: adminPassword }),
       });
 
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'demo@resumeai.com', password: 'demo1234' }),
+        body: JSON.stringify({ email: adminEmail, password: adminPassword }),
       });
 
       const data = await res.json();
@@ -113,11 +117,11 @@ export default function LoginPage() {
           name: data.name,
           email: data.email,
           plan: data.plan,
-          role: data.role || 'user',
+          role: data.role || 'admin',
           image: data.image || undefined,
         });
       } else {
-        setError(data.error || 'Demo login failed.');
+        setError(data.error || 'Admin login failed.');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -261,7 +265,7 @@ export default function LoginPage() {
                 onClick={handleDemoLogin}
                 className="text-emerald-600 hover:text-emerald-700 font-semibold hover:underline"
               >
-                Use demo account
+                Login as Admin
               </button>
             </p>
 
