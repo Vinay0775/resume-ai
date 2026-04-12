@@ -20,7 +20,8 @@
     "db:generate:win": "npm.cmd exec prisma generate",
     "db:migrate:win": "npm.cmd exec prisma migrate dev",
     "db:reset:win": "npm.cmd exec prisma migrate reset",
-    "db:seed:firebase": "tsx firebase-seed.ts"
+    "db:seed:firebase": "tsx firebase-seed.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
