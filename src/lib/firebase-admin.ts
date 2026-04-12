@@ -8,7 +8,10 @@ let adminApp: App | null = null;
 let db: any = null;
 let auth: any = null;
 
-if (!getApps().length) {
+// Only initialize if we're NOT building (runtime only)
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+
+if (!isBuildTime && !getApps().length) {
   // Try to load from JSON file first, then fallback to environment variable
   const serviceAccountPath = path.join(process.cwd(), 'resume-ai-336b4-firebase-adminsdk-fbsvc-fea78ac206.json');
 
@@ -35,7 +38,7 @@ if (!getApps().length) {
     console.warn('⚠️ Firebase Admin credentials not found. Firebase features will be disabled.');
     console.warn('Please provide either the service account JSON file or FIREBASE_PRIVATE_KEY environment variable.');
   }
-} else {
+} else if (getApps().length) {
   adminApp = getApps()[0];
 }
 
