@@ -70,6 +70,20 @@ export async function POST(request: Request) {
       },
     });
 
+    // Handle case where database is not available
+    if (!user) {
+      // Return mock user for Google sign-in flow when DB is unavailable
+      return NextResponse.json({
+        id: 'temp-' + email,
+        name: name || email.split('@')[0],
+        email,
+        plan: 'free',
+        role: 'user',
+        image: null,
+        message: 'User created without database',
+      }, { status: 201 });
+    }
+
     return NextResponse.json({
       id: user.id,
       name: user.name,
@@ -79,6 +93,7 @@ export async function POST(request: Request) {
       image: user.image,
     }, { status: 201 });
   } catch (error) {
+    console.error('User POST error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

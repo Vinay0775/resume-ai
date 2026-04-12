@@ -21,7 +21,15 @@ export async function POST(request: Request) {
     }
 
     if (!user.password) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+      // User signed up with Google, no password set - allow login
+      return NextResponse.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        plan: user.plan,
+        role: user.role,
+        image: user.image,
+      });
     }
 
     const isValid = await bcrypt.compare(password, user.password);

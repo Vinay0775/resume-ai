@@ -8,43 +8,61 @@ let adminApp: App | null = null;
 let db: any = null;
 let auth: any = null;
 
-// Only initialize if we're NOT building (runtime only)
+// Only initialize during runtime, NOT during build
 const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
 
 if (!isBuildTime && !getApps().length) {
-  // Try to load from JSON file first, then fallback to environment variable
-  const serviceAccountPath = path.join(process.cwd(), 'resume-ai-336b4-firebase-adminsdk-fbsvc-fea78ac206.json');
+  try {
+    // Try to load from JSON file first
+    const serviceAccountPath = path.join(process.cwd(), 'resume-ai-336b4-firebase-adminsdk-fbsvc-fea78ac206.json');
 
-  let credentialConfig: any;
-
-  if (fs.existsSync(serviceAccountPath)) {
-    // Load from file
-    credentialConfig = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-    adminApp = initializeApp({
-      credential: cert(credentialConfig),
-    });
-  } else if (process.env.FIREBASE_PRIVATE_KEY) {
-    // Load from environment variable
-    credentialConfig = {
-      projectId: 'resume-ai-336b4',
-      clientEmail: 'firebase-adminsdk-fbsvc@resume-ai-336b4.iam.gserviceaccount.com',
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    };
-    adminApp = initializeApp({
-      credential: cert(credentialConfig),
-    });
-  } else {
-    // Gracefully handle missing credentials during build
-    console.warn('⚠️ Firebase Admin credentials not found. Firebase features will be disabled.');
-    console.warn('Please provide either the service account JSON file or FIREBASE_PRIVATE_KEY environment variable.');
+    if (fs.existsSync(serviceAccountPath)) {
+      const credentialConfig = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      adminApp = initializeApp({ credential: cert(credentialConfig) });
+      console.log('✅ Firebase Admin initialized from JSON file');
+    } else if (process.env.FIREBASE_PRIVATE_KEY) {
+      // Load from environment variable
+      let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+      
+      // Handle different formats
+      if (privateKey.includes('BEGIN PRIVATE KEY')) {
+        // Already in correct format, just replace \n
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      } else if (privateKey.includes('BEGIN RSA PRIVATE KEY')) {
+        // RSA format, still valid
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      }
+      
+      adminApp = initializeApp({
+        credential: cert({
+          projectId: 'resume-ai-336b4',
+          clientEmail: 'firebase-adminsdk-fbsvc@resume-ai-336b4.iam.gserviceaccount.com',
+          privateKey: privateKey,
+        }),
+      });
+      console.log('✅ Firebase Admin initialized from environment variable');
+    } else {
+      console.warn('⚠️ Firebase Admin credentials not found. Database features disabled.');
+    }
+  } catch (error: any) {
+    console.error('❌ Firebase Admin initialization failed:', error?.message || error);
+    console.warn('⚠️ Continuing without Firebase Admin SDK. Database features will be disabled.');
+    adminApp = null;
   }
 } else if (getApps().length) {
   adminApp = getApps()[0];
 }
 
+// Initialize db and auth only if adminApp is available
 if (adminApp) {
-  db = getFirestore(adminApp);
-  auth = getAuth(adminApp);
+  try {
+    db = getFirestore(adminApp);
+    auth = getAuth(adminApp);
+  } catch (error) {
+    console.error('Failed to get Firestore/Auth:', error);
+    db = null;
+    auth = null;
+  }
 }
 
 export { adminApp, db, auth };
