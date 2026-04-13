@@ -21,6 +21,9 @@ interface AppState {
   setSelectedTemplate: (template: string) => void;
   previewScale: number;
   setPreviewScale: (scale: number) => void;
+
+  // Initialize from localStorage
+  initializeFromStorage: () => void;
 }
 
 const defaultResumeData: ResumeData = {
@@ -62,4 +65,29 @@ export const useAppStore = create<AppState>((set) => ({
   setSelectedTemplate: (template) => set({ selectedTemplate: template }),
   previewScale: 0.5,
   setPreviewScale: (scale) => set({ previewScale: scale }),
+
+  // Initialize from localStorage on app start
+  initializeFromStorage: () => {
+    try {
+      const savedUser = localStorage.getItem('resumeai_user');
+      if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        set({
+          user: {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            plan: userData.plan,
+            role: userData.role || 'user',
+            image: userData.image || undefined,
+          },
+          isAuthenticated: true,
+        });
+        return true;
+      }
+    } catch (error) {
+      console.error('Failed to initialize from storage:', error);
+    }
+    return false;
+  },
 }));

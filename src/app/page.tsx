@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store';
 import LandingPage from '@/components/landing/LandingPage';
 import LoginPage from '@/components/auth/LoginPage';
@@ -14,39 +14,61 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 
 function AppContent() {
-  const { currentPage, isAuthenticated, user, setUser, setIsAuthenticated } = useAppStore();
+  const { currentPage, isAuthenticated, user, setUser, setIsAuthenticated, initializeFromStorage } = useAppStore();
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Check for existing session on mount using localStorage
+  // Initialize from localStorage on mount (runs BEFORE any rendering)
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const savedUser = localStorage.getItem('resumeai_user');
-        if (savedUser) {
-          const userData = JSON.parse(savedUser);
-          // Verify user still exists in database
-          const res = await fetch(`/api/user?email=${encodeURIComponent(userData.email)}`);
-          if (res.ok) {
-            const freshData = await res.json();
-            setUser({
-              id: freshData.id,
-              name: freshData.name,
-              email: freshData.email,
-              plan: freshData.plan,
-              role: freshData.role || 'user',
-              image: freshData.image || undefined,
-            });
-            setIsAuthenticated(true);
-          } else {
-            // User no longer exists, clear session
-            localStorage.removeItem('resumeai_user');
+    const init = async () => {
+      // First, try to load from localStorage
+      const hasStoredUser = initializeFromStorage();
+      
+      // If we found a stored user, verify it still exists in database
+      if (hasStoredUser) {
+        try {
+          const savedUser = localStorage.getItem('resumeai_user');
+          if (savedUser) {
+            const userData = JSON.parse(savedUser);
+            const res = await fetch(`/api/user?email=${encodeURIComponent(userData.email)}`);
+            if (!res.ok) {
+              // User no longer exists in database, clear session
+              localStorage.removeItem('resumeai_user');
+              setIsAuthenticated(false);
+              setUser(null);
+            }
           }
+        } catch (error) {
+          console.error('Failed to verify user:', error);
         }
-      } catch {
-        // No valid session
       }
+      
+      setIsInitialized(true);
     };
-    checkSession();
-  }, [setUser, setIsAuthenticated]);
+    
+    init();
+  }, [initializeFromStorage, setUser, setIsAuthenticated]);
+
+  // Show nothing while initializing (prevents flash of logged-out state)
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  // If authenticated and trying to access landing/login/signup, redirect to dashboard
+  if (isAuthenticated && (currentPage === 'landing' || currentPage === 'login' || currentPage === 'signup')) {
+    // Use useEffect to avoid infinite loop
+    useEffect(() => {
+      useAppStore.getState().setCurrentPage('dashboard');
+    }, []);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   // Render current page
   switch (currentPage) {
