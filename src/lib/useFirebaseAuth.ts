@@ -103,21 +103,40 @@ export function useFirebaseAuth() {
   const signInWithGoogle = useCallback(async (): Promise<UserData | null> => {
     try {
       const provider = new GoogleAuthProvider();
+      console.log('%c🔵 Google Sign-in initiated: signInWithPopup', 'color: blue; font-weight: bold');
+      
       const result = await signInWithPopup(auth, provider);
+      console.log('%c✅ Google Sign-in successful', 'color: green; font-weight: bold', {
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+      });
+      
       return await syncWithLocalApi(result.user);
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
+      
+      // Log error for debugging
+      console.error('%c❌ Google Sign-in error', 'color: red; font-weight: bold', {
+        code: firebaseError.code,
+        message: firebaseError.message,
+        fullError: error,
+      });
 
-      // Log common expected errors without alarming
-      if (
-        firebaseError.code === 'auth/popup-blocked' ||
-        firebaseError.code === 'auth/popup-closed-by-user' ||
-        firebaseError.code === 'auth/cancelled-popup-request' ||
-        firebaseError.code === 'auth/unauthorized-domain'
-      ) {
-        // Popup blocked - fallback needed
-      } else {
-        // Firebase Google sign-in error - handled
+      // Log special error cases
+      if (firebaseError.code === 'auth/popup-blocked') {
+        console.warn('⚠️ Popup was blocked. User may need to allow popups.');
+      } else if (firebaseError.code === 'auth/popup-closed-by-user') {
+        console.warn('⚠️ User closed the popup.');
+      } else if (firebaseError.code === 'auth/cancelled-popup-request') {
+        console.warn('⚠️ Popup request was cancelled.');
+      } else if (firebaseError.code === 'auth/unauthorized-domain') {
+        console.error('🔴 CRITICAL: Domain not authorized in Firebase Console!');
+        console.error('Please add the current domain to Firebase > Authentication > Settings > Authorized domains');
+      } else if (firebaseError.code === 'auth/invalid-credential') {
+        console.error('🔴 Invalid credentials. Check Firebase configuration.');
+      } else if (firebaseError.code === 'auth/operation-not-supported-in-this-environment') {
+        console.error('🔴 Google sign-in not supported in this environment.');
       }
 
       // Return null so the caller can show a fallback (email dialog)

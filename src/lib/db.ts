@@ -5,7 +5,10 @@ import { adminApp, db as firebaseDb } from './firebase-admin';
 
 // Check if Firebase is initialized
 if (!adminApp) {
-  console.warn('⚠️ Firebase Admin is not initialized. Database will return empty data.');
+  console.error('⚠️⚠️⚠️ WARNING: Firebase Admin is not initialized!');
+  console.error('Database operations will return empty/null.');
+  console.error('User signup data will NOT be saved to Firestore.');
+  console.error('Please check src/lib/firebase-admin.ts for setup instructions.');
 }
 
 // Safe wrapper that handles missing Firebase gracefully with try/catch

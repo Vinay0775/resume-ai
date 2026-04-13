@@ -74,15 +74,26 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
+    console.log('%c👤 Google Sign-In button clicked', 'color: blue; font-weight: bold');
+    
     try {
       const result = await signInWithGoogle();
       if (result) {
+        console.log('%c✅ Google Sign-In successful in LoginPage', 'color: green; font-weight: bold');
         handleLoginSuccess(result);
       } else {
-        setError('Google sign-in failed or was cancelled.');
+        console.warn('%c⚠️ Google Sign-In returned null', 'color: orange; font-weight: bold');
+        setError(
+          'Google sign-in failed. Check browser console (F12) for error details. ' +
+          'If you see "unauthorized-domain" error, see GOOGLE_SIGNIN_SETUP.md'
+        );
       }
-    } catch {
-      setError('An error occurred during Google sign-in.');
+    } catch (error) {
+      console.error('%c❌ Google Sign-In exception', 'color: red; font-weight: bold', error);
+      setError(
+        'An error occurred during Google sign-in. ' +
+        'Open browser console (F12) to see the error.'
+      );
     } finally {
       setLoading(false);
     }
